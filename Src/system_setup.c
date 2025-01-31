@@ -92,3 +92,8 @@ void _close(void) { Error_Handler(); }
 void _lseek(void) { Error_Handler(); }
 void _read(void) { Error_Handler(); }
 void _write(void) { Error_Handler(); }
+
+
+void  My_HAL_RCC_GPIOC_CLK_ENABLE(void){
+  HAL_RCC_GPIOC_CLK_ENABLE();
+}
