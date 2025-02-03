@@ -12,4 +12,4 @@ int lab7_main(void);
 
 
 //Lab 1 Function
-void My_HAL_RCC_GPIOC_CLK_ENABLE(void);
+void My_HAL_RCC_GPIOC_CLK_ENABLE (void);
