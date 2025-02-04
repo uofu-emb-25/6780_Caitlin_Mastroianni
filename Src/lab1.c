@@ -18,11 +18,22 @@ GPIO_SPEED_FREQ_LOW,
 GPIO_NOPULL};
 My_HAL_GPIO_Init(GPIOC, &initStr); // Initialize pins PC8 & PC9
 
+GPIO_InitTypeDef initStr2 = {GPIO_PIN_0,
+GPIO_MODE_INPUT,
+GPIO_SPEED_FREQ_LOW,
+GPIO_PULLDOWN};
+My_HAL_GPIO_Init(GPIOA, &initStr2);
+
 My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Start PC8 high
+My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
 
 while (1) {
-HAL_Delay(200); // Delay 200ms
-// Toggle the output state of both PC8 and PC9
-My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
+    HAL_Delay(200); // Delay 200ms
+
+    uint8_t buttonState = My_HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+
+    if (!buttonState) {  // Active-low check
+        My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
+    }
 }
 }
