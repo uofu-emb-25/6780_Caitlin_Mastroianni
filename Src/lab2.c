@@ -1,4 +1,4 @@
-#include <stm32f0xx_hal.h>
+#include <stm32f0xx_it.h>
 #include <assert.h>
 #include <hal_gpio.h>
 #include <main.h>
@@ -6,8 +6,8 @@
 int lab2_main(void) {
 SystemClock_Config();
 
-My_HAL_RCC_GPIOC_CLK_ENABLE(); 
-My_HAL_RCC_GPIOA_CLK_ENABLE(); 
+__HAL_RCC_GPIOC_CLK_ENABLE(); 
+__HAL_RCC_GPIOA_CLK_ENABLE(); 
 
 GPIO_InitTypeDef initStr = {GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9,
 GPIO_MODE_OUTPUT_PP,
