@@ -10,6 +10,7 @@ SystemClock_Config(); //Configure the system clock
 the GPIOC peripheral. You’ll be redoing this code
 with hardware register access. */
 My_HAL_RCC_GPIOC_CLK_ENABLE(); 
+My_HAL_RCC_GPIOA_CLK_ENABLE(); 
 // Enable the GPIOC clock in the RCC
 // Set up a configuration struct to pass to the initialization function
 GPIO_InitTypeDef initStr = {GPIO_PIN_6 | GPIO_PIN_7,
@@ -18,22 +19,43 @@ GPIO_SPEED_FREQ_LOW,
 GPIO_NOPULL};
 My_HAL_GPIO_Init(GPIOC, &initStr); // Initialize pins PC8 & PC9
 
-GPIO_InitTypeDef initStr2 = {GPIO_PIN_0,
-GPIO_MODE_INPUT,
-GPIO_SPEED_FREQ_LOW,
-GPIO_PULLDOWN};
+GPIO_InitTypeDef initStr2 = {
+    GPIO_PIN_0,         // PA0
+    GPIO_MODE_INPUT,    // Input mode
+    GPIO_SPEED_FREQ_LOW,
+    GPIO_PULLDOWN       // Pull-down to avoid floating
+};
 My_HAL_GPIO_Init(GPIOA, &initStr2);
 
-My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Start PC8 high
-My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
 
-while (1) {
-    HAL_Delay(200); // Delay 200ms
+// My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Start PC8 high
+// My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
 
-    uint8_t buttonState = My_HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+uint32_t debouncer = 0; // Debouncer shift register
 
-    if (!buttonState) {  // Active-low check
-        My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
+    while (1) {
+        // Shift left to track past button states
+        debouncer = (debouncer << 1);
+
+        // Read the button state
+        if (My_HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) {
+            debouncer |= 0x01; // Set lowest bit if button is high
+        }
+
+        // Detect a stable button press (transition from low to high)
+        if (debouncer == 0xFFFFFFFF) {
+            HAL_Delay(200);
+            My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
+        }
+
+        // Detect when button is released (transition from high to low)
+        if (debouncer == 0x00000000) {
+            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+        }
+        if (debouncer == 0x7FFFFFFF) {
+            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+        }   
     }
-}
 }
