@@ -28,7 +28,7 @@ GPIO_InitTypeDef initStr2 = {
 My_HAL_GPIO_Init(GPIOA, &initStr2);
 
 
-// My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Start PC8 high
+My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Start PC8 high
 // My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
 
 uint32_t debouncer = 0; // Debouncer shift register
@@ -38,24 +38,20 @@ uint32_t debouncer = 0; // Debouncer shift register
         debouncer = (debouncer << 1);
 
         // Read the button state
-        if (My_HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) {
+        if (My_HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0)) {
             debouncer |= 0x01; // Set lowest bit if button is high
         }
 
         // Detect a stable button press (transition from low to high)
         if (debouncer == 0xFFFFFFFF) {
-            HAL_Delay(200);
-            My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
         }
 
         // Detect when button is released (transition from high to low)
         if (debouncer == 0x00000000) {
-            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
         }
         if (debouncer == 0x7FFFFFFF) {
-            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
-            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+            My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
+            My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
         }   
     }
 }

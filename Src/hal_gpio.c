@@ -55,3 +55,7 @@ void My_HAL_GPIO_TogglePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
     GPIOx->ODR ^= GPIO_Pin;
 }
 
+void EXTI_rising_edge_trigger(void){
+    EXTI->IMR |= 0x0001;
+    EXTI->RTSR |= 0x0001; 
+}
