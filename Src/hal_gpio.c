@@ -59,3 +59,8 @@ void EXTI_rising_edge_trigger(void){
     EXTI->IMR |= 0x0001;
     EXTI->RTSR |= 0x0001; 
 }
+
+void SYSCFG_setup(void){
+    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+    SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI0_PA;
+}
