@@ -14,6 +14,8 @@ int lab7_main(void);
 //Lab 1 Function
 void My_HAL_RCC_GPIOC_CLK_ENABLE (void);
 void My_HAL_RCC_GPIOA_CLK_ENABLE (void);
+
+//Lab 2 Function
 void My_HAL_RCC_SYSCFG_CLK_ENABLE (void);
 void EXTI_rising_edge_trigger(void);
 void SYSCFG_setup(void);
