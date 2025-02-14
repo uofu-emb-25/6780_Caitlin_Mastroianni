@@ -52,8 +52,8 @@ int lab3_main(void) {
     TIM3->CR1 |= TIM_CR1_CEN;
 
     // Set to 20% of ARR value
-    TIM3->CCR1 = 20;
-    TIM3->CCR2 = 20;
+    TIM3->CCR1 = 100;
+    TIM3->CCR2 = 10;
     
     //GPIOC->MODER = (GPIOC->MODER & ~(GPIO_MODER_MODER6 | GPIO_MODER_MODER7)) 
     //           | GPIO_MODER_MODER6_1 | GPIO_MODER_MODER7_1; //Select alternate function mode on GPIOC pin 6 and 7    
@@ -62,7 +62,7 @@ int lab3_main(void) {
         GPIO_MODE_OUTPUT_PP,
         GPIO_SPEED_FREQ_LOW,
         GPIO_NOPULL};
-    HAL_GPIO_Init(GPIOC, &initStr); 
+   My_HAL_GPIO_Init(GPIOC, &initStr); 
 
     My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
     
