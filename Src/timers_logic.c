@@ -13,32 +13,27 @@ void SET_TIM2_4Hz(void) {
     NVIC_EnableIRQ(TIM2_IRQn);  // Enable TIM2 interrupt in NVIC
     TIM2->CR1 |= TIM_CR1_CEN;   // Enable TIM2 counter
 }
-void TIM2_IRQHandler(void){
-    if (TIM2->SR & TIM_SR_UIF) {  // Check if update event occurred
-        TIM2->SR &= ~TIM_SR_UIF;  // Clear update interrupt flag
-        My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9); //Toggle between Green (PC8) and Orange (PC9) LEDs
-    }
-}
-
+// void TIM2_IRQHandler(void){
+//     My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9); //Toggle between Green (PC8) and Orange (PC9) LEDs
+//     TIM2->SR &= ~TIM_SR_UIF;  // Clear update interrupt flag
+// }
 void ENABLE_RCC_TIM3(void){
     RCC->APB1ENR |= RCC_APB1ENR_TIM3EN; // Enable TIM3 clock
-    (void)RCC->APB1ENR; // Small delay to allow clock to stabilize
-
-    // Reset TIM3 (to make sure it's in a clean state)
-    RCC->APB1RSTR |= RCC_APB1RSTR_TIM3RST;
-    RCC->APB1RSTR &= ~RCC_APB1RSTR_TIM3RST;
 }
 
 void REDBLUEDIM(void){
     TIM3->PSC = 99;   // Prescaler for 80 kHz timer clock
     TIM3->ARR = 100;  // ARR for 800 Hz PWM period
-    TIM3->CR1 = TIM_CR1_CEN;
 
-    // Set channel 1 to PWM output mode 2 (110)
-    TIM3->CCMR1 |= (TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_0);
+     //Clearing and configuring channels as outputs
+     TIM3->CCMR1 &= ~(3);
+     TIM3->CCMR1 &= ~(3<<8);
 
-    // Set channel 2 to PWM output mode 1 (101)
-    TIM3->CCMR1 |= (TIM_CCMR1_OC2M_2 | TIM_CCMR1_OC2M_1);
+    //Set ch1 to PWM output mode 2 (111)
+     TIM3->CCMR1 |= (7 << 4);
+
+     //Set ch2 to PWM output mode 1 (110)
+     TIM3->CCMR1 |= (6 << 12);
 
     // Enable preload for channel 1 and channel 2
     TIM3->CCMR1 |= TIM_CCMR1_OC1PE;
@@ -50,14 +45,12 @@ void REDBLUEDIM(void){
     // Set to 20% of ARR value
     TIM3->CCR1 = 20;
     TIM3->CCR2 = 20;
+    
+    GPIOC->MODER = (GPIOC->MODER & ~(GPIO_MODER_MODER6 | GPIO_MODER_MODER7)) 
+               | GPIO_MODER_MODER6_1 | GPIO_MODER_MODER7_1; //Select alternate function mode on GPIOC pin 6 and 7
 
-    // Set PC6 & PC7 to Alternate Function Mode
-    GPIOC->MODER &= ~((3 << (6 * 2)) | (3 << (7 * 2))); // Clear mode bits
-    GPIOC->MODER |= (2 << (6 * 2)) | (2 << (7 * 2));    // Set to AF mode (10)
-
-    // Set PC6 & PC7 to AF1 (TIM3_CH1 & TIM3_CH2)
-    GPIOC->AFR[0] &= ~((0xF << (6 * 4)) | (0xF << (7 * 4))); // Clear AF bits
-    GPIOC->AFR[0] |= (1 << (6 * 4)) | (1 << (7 * 4));        // Set AF1
+    
+   // GPIOC->AFR[0] &= ~(0xF << GPIO_AFRL_AFRL7_Pos); //Select AF0 on PC7
 
     // Enable the timer counter
     TIM3->CR1 |= TIM_CR1_CEN;
