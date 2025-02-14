@@ -21,7 +21,7 @@ int lab3_main(void) {
 
     //SET_TIM2_4Hz();
     TIM2->PSC = 7999;  // Set prescaler to 7999 (Timer clock = 1 kHz)
-    TIM2->ARR = 500;   // Set to 500 (4 Hz interrupt)
+    TIM2->ARR = 1500;   // Set to 500 (4 Hz interrupt)
     TIM2->DIER |= TIM_DIER_UIE; // Enable update interrupt
     
     TIM2->CR1 |= TIM_CR1_CEN;   // Enable TIM2 counter
