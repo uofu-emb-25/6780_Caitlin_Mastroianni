@@ -119,6 +119,8 @@ volatile int charReceivedFlag = 0;
 void USART3_4_IRQHandler(void) {
     receivedChar = USART3->RDR;  
     USART3_trans_Char(receivedChar);
+    USART3_trans_Char('\r');
+    USART3_trans_Char('\n'); 
     charReceivedFlag = 1;
 }
 
@@ -160,6 +162,10 @@ void USART3_input_LED(void){
             case 'B':
                 My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
                 break;
+            default:
+                USART_trans_String("\r\nNot a valid input");
+                break;
         }
+        USART_trans_String("\r\nEnter a color letter (r, g, o, b):");
     }
 }

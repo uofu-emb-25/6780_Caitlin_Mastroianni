@@ -33,9 +33,9 @@ int lab4_main(void) {
     NVIC_EnableIRQ(USART3_4_IRQn);
     NVIC_SetPriority(USART3_4_IRQn, 1);
 
-    USART3_trans_Char('B');
+   // USART3_trans_Char('B');
 
-//    USART_trans_String("Bob Marley");rr
+    USART_trans_String("Enter a color letter (r, g, o, b): \r\n");
 
    while(1){
     USART3_input_LED();

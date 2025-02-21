@@ -17,3 +17,4 @@ void USART3_Trans_Char(char inputChar);
 void My_USART_HAL_GPIO_Init(void);
 void USART_trans_String(char inputString[]);
 char USART3_read_Char(void);
+void USART3_input_LED(void);
