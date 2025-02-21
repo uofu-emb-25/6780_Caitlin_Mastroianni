@@ -119,3 +119,9 @@ void USART3_trans_Char(char inputChar){
     }
     USART3->TDR = inputChar;
 }
+
+void USART_trans_String(char inputString[]){
+    for(int i = 0; i < strlen(inputString); i++) {
+        USART3_trans_Char(inputString[i]);
+    }
+}

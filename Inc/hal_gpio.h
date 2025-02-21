@@ -15,3 +15,4 @@ void USART3_Clock_Enable(void);
 void USART3_Init(void);
 void USART3_Trans_Char(char inputChar);
 void My_USART_HAL_GPIO_Init(void);
+void USART_trans_String(char inputString[]);

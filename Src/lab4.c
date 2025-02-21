@@ -24,6 +24,8 @@ int lab4_main(void) {
 
    USART3_trans_Char('B');
 
+   USART_trans_String("Bob Marley");
+
    while(1){
    }
 }
