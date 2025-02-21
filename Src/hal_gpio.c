@@ -46,7 +46,7 @@ void My_HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 
 void My_USART_HAL_GPIO_Init(void)
 {
-    GPIOB->MODER |= (GPIO_MODER_MODER10_1 | GPIO_MODER_MODER11_1);
+    GPIOB->MODER |= ((GPIOB -> MODER & ~(GPIO_MODER_MODER10_1 | GPIO_MODER_MODER11_1) | GPIO_MODER_MODER10_1 | GPIO_MODER_MODER11_1));
     GPIOB->AFR[1] |= ((4 << GPIO_AFRH_AFSEL10_Pos) | (4 << GPIO_AFRH_AFSEL11_Pos));
 }
 
@@ -108,14 +108,22 @@ void USART3_Clock_Enable(void){
 
 void USART3_Init(void){
     USART3->BRR = HAL_RCC_GetHCLKFreq()/115200;
-    NVIC_EnableIRQ(USART3_4_IRQn);
-    NVIC_SetPriority(USART3_4_IRQn, 0);
+    USART3->CR1 |= USART_CR1_RXNEIE;
     USART3->CR1 |= (USART_CR1_TE | USART_CR1_RE);
     USART3->CR1 |= USART_CR1_UE;
 }
 
+volatile char receivedChar;
+volatile int charReceivedFlag = 0;
+
+void USART3_4_IRQHandler(void) {
+    receivedChar = USART3->RDR;  
+    USART3_trans_Char(receivedChar);
+    charReceivedFlag = 1;
+}
+
 void USART3_trans_Char(char inputChar){
-    while(!(USART3->ISR & (1 << 7))){
+    while(!(USART3->ISR & USART_ISR_TXE)){
     }
     USART3->TDR = inputChar;
 }
@@ -123,5 +131,35 @@ void USART3_trans_Char(char inputChar){
 void USART_trans_String(char inputString[]){
     for(int i = 0; i < strlen(inputString); i++) {
         USART3_trans_Char(inputString[i]);
+    }
+}
+
+
+char USART3_read_Char(void) {
+    while (!(USART3->ISR & USART_ISR_RXNE)); 
+    return (char)(USART3->RDR); 
+}
+
+void USART3_input_LED(void){
+    if(charReceivedFlag){
+        charReceivedFlag =0;
+        switch (receivedChar){
+            case 'r':
+            case 'R':
+                My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+                break;
+            case 'g':
+            case 'G':
+                My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
+                break;
+            case 'o':
+            case 'O':
+                My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+                break;
+            case 'b':
+            case 'B':
+                My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
+                break;
+        }
     }
 }
