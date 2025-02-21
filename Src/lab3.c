@@ -52,7 +52,7 @@ int lab3_main(void) {
     TIM3->CR1 |= TIM_CR1_CEN;
 
     // Set to 20% of ARR value
-    TIM3->CCR1 = 100;
+    TIM3->CCR1 = 75;
     TIM3->CCR2 = 10;
     
     //GPIOC->MODER = (GPIOC->MODER & ~(GPIO_MODER_MODER6 | GPIO_MODER_MODER7)) 
