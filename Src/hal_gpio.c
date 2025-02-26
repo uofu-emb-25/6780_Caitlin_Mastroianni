@@ -142,30 +142,78 @@ char USART3_read_Char(void) {
     return (char)(USART3->RDR); 
 }
 
-void USART3_input_LED(void){
-    if(charReceivedFlag){
-        charReceivedFlag =0;
-        switch (receivedChar){
-            case 'r':
-            case 'R':
-                My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
-                break;
-            case 'g':
-            case 'G':
-                My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
-                break;
-            case 'o':
-            case 'O':
-                My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-                break;
-            case 'b':
-            case 'B':
-                My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
-                break;
-            default:
-                USART_trans_String("\r\nNot a valid input");
-                break;
+void USART3_input_LED(void) {
+    static char ledChar = 0;
+    static int recievedStatus = 0;
+
+    if (charReceivedFlag) {
+        charReceivedFlag = 0;
+
+        if (!recievedStatus) {  
+            switch (receivedChar) {
+                case 'r': case 'R':
+                case 'g': case 'G':
+                case 'o': case 'O':
+                case 'b': case 'B':
+                    ledChar = receivedChar;
+                    recievedStatus = 1;
+                    USART_trans_String("\r\nEnter the number command (0 = off, 1 = on, 2 = toggle): ");
+                    return;  
+                default:
+                    USART_trans_String("\r\nInvalid input. Use r, g, o, b.");
+                    USART_trans_String("\r\nEnter a color letter (r, g, o, b): ");
+                    return;
+            }
+        } else {  
+            char numChar = receivedChar;  
+            uint16_t ledPin = 0;
+
+            switch (ledChar) {
+                case 'r': 
+                case 'R': 
+                    ledPin = GPIO_PIN_6; 
+                    break;
+                case 'g': 
+                case 'G': 
+                    ledPin = GPIO_PIN_9; 
+                    break;
+                case 'o': 
+                case 'O': 
+                    ledPin = GPIO_PIN_8; 
+                    break;
+                case 'b': 
+                case 'B': 
+                    ledPin = GPIO_PIN_7; 
+                    break;
+            }
+
+            switch (numChar) {
+                case '0':
+                    My_HAL_GPIO_WritePin(GPIOC, ledPin, GPIO_PIN_RESET);
+                    USART_trans_String("\r\n LED is now off");
+                    break;
+                case '1':
+                    My_HAL_GPIO_WritePin(GPIOC, ledPin, GPIO_PIN_SET);  // Turn ON LED
+                    USART_trans_String("\r\nLED is now on");
+                    break;
+                case '2':
+                    My_HAL_GPIO_WritePin(GPIOC, ledPin, GPIO_PIN_SET);
+                    HAL_Delay(200);
+                    My_HAL_GPIO_WritePin(GPIOC, ledPin, GPIO_PIN_RESET);
+                    USART_trans_String("\r\nLED is toggled");
+                    break;
+                default:
+                    USART_trans_String("\r\nInvalid command. Use 0, 1, or 2.");
+                    USART_trans_String("\r\nEnter a color letter (r, g, o, b):");
+                    ledChar = 0;  // Reset state
+                    recievedStatus = 0;
+                    return;
+            }
+
+            // Reset state after command execution
+            ledChar = 0;
+            recievedStatus = 0;
+            USART_trans_String("\r\nEnter a color letter (r, g, o, b):");
         }
-        USART_trans_String("\r\nEnter a color letter (r, g, o, b):");
     }
 }

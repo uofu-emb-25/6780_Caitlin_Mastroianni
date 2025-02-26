@@ -35,7 +35,9 @@ int lab4_main(void) {
 
    // USART3_trans_Char('B');
 
-    USART_trans_String("Enter a color letter (r, g, o, b): \r\n");
+    // USART_trans_String("Enter a color letter (r, g, o, b): \r\n");
+
+    USART_trans_String("\r\nEnter a color letter (r, g, o, b):");
 
    while(1){
     USART3_input_LED();
