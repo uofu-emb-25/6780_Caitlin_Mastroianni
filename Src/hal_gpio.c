@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stm32f0xx_hal.h>
 #include <stm32f0xx_hal_gpio.h>
+#include <assert.h>
 
 void My_HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 {
@@ -262,3 +263,90 @@ void I2C2_Reading_Reg(void){
 
     I2C2->CR2 |= I2C_CR2_STOP;
 }
+
+
+void lab5_checkoff_one(void){
+    I2C2->TIMINGR = (1U << 28) |  (0x13 << 0) | (0x0F << 8) | (0x02 << 16) | (0x04 << 20);
+    I2C2->CR1 |= I2C_CR1_PE; 
+
+    I2C2->CR2 &= ~(0x3FF);
+    I2C2->CR2 &= ~(0xFF << 16);
+
+    I2C2->CR2 |= (0x69 << 1) | (1 << 16);
+    I2C2->CR2 &= ~(1 << 10);
+
+    I2C2->CR2 |= (1 << 13);
+    assert(I2C2->CR2 |= (1 << 13));
+
+    
+    while (!(I2C2->ISR & (I2C_ISR_TXIS | I2C_ISR_NACKF)));
+    if (I2C2->ISR & I2C_ISR_NACKF)
+    {
+        return;
+    }
+    
+
+    I2C2->TXDR = WHO_AM_I;
+
+    while (!(I2C2->ISR & I2C_ISR_TC));
+
+    I2C2->CR2 |= (0x69 << 1) | (1 << 16) | (1 << 10) | (1 << 13);
+
+    while (!(I2C2->ISR & (I2C_ISR_RXNE | I2C_ISR_NACKF)));
+
+    if (I2C2->ISR & I2C_ISR_RXNE)
+    {
+        uint8_t data = I2C2->RXDR;
+
+        if (data == 0xD3) {
+            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+        } else {
+            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+        }
+    }
+
+    I2C2->CR2 |= I2C_CR2_STOP;
+}
+
+uint8_t Write_I2C(uint8_t reg, uint8_t value) {
+
+    I2C2->CR2 = (0x69 << 1) | (2 << 16); 
+    I2C2->CR2 &= ~(1 << 10);      
+    I2C2->CR2 |= (1 << 13); 
+    
+    while (!(I2C2->ISR & (I2C_ISR_TXIS | I2C_ISR_NACKF)));
+    if (I2C2->ISR & I2C_ISR_NACKF){
+        return;
+    } 
+    
+    I2C2->TXDR = reg;
+    
+    while (!(I2C2->ISR & I2C_ISR_TXIS));
+    
+    I2C2->TXDR = value;
+    
+    while (!(I2C2->ISR & I2C_ISR_TC));
+    
+    I2C2->CR2 |= I2C_CR2_STOP;
+}
+
+uint8_t Read_IC2 (uint8_t reg) {
+
+    I2C2->CR2 = (0x69 << 1) | (1 << 16);
+    I2C2->CR2 &= ~(1 << 10);
+    I2C2->CR2 |= (1 << 13);
+    
+    while (!(I2C2->ISR & I2C_ISR_TXIS));
+
+    I2C2->TXDR = reg;
+    
+    while (!(I2C2->ISR & I2C_ISR_TC));
+
+    I2C2->CR2 = (0x69 << 1) | (1 << 16) | (1 << 10);
+    I2C2->CR2 |= (1 << 13);
+    
+    while (!(I2C2->ISR & I2C_ISR_RXNE));
+
+    return I2C2->RXDR;
+}
+

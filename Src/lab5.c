@@ -1,10 +1,15 @@
 #include <stdint.h>
 #include <stm32f0xx_it.h>
 #include <hal_gpio.h>
-#include <assert.h>
 #include <timers.h>
 
 #define WHO_AM_I      0x0F
+#define CTRL_REG1     0x20
+#define OUT_X_LOW     0x28
+#define OUT_X_HIGH    0x29
+#define OUT_Y_LOW     0x2A
+#define OUT_Y_HIGH    0x2B
+#define THRESHOLD     2000
 
 int lab5_main(void) {
     // System clock configuration
@@ -51,44 +56,28 @@ int lab5_main(void) {
         GPIO_NOPULL};
     My_HAL_GPIO_Init(GPIOC, &initStr_LED);
 
-    I2C2->TIMINGR = (1U << 28) |  (0x13 << 0) | (0x0F << 8) | (0x02 << 16) | (0x04 << 20);
-    I2C2->CR1 |= I2C_CR1_PE; 
+    lab5_checkoff_one();
 
-    I2C2->CR2 &= ~(0x3FF);
-    I2C2->CR2 &= ~(0xFF << 16);
+    Write_I2C(CTRL_REG1, 0x0F);
 
-    I2C2->CR2 |= (0x69 << 1) | (1 << 16);
-    I2C2->CR2 &= ~(1 << 10);
+    while(1){
+        int16_t x_axis = (Read_IC2(OUT_X_HIGH) << 8) | Read_IC2(OUT_X_LOW);
 
-    I2C2->CR2 |= (1 << 13);
-    assert(I2C2->CR2 |= (1 << 13));
+        int16_t y_axis = (Read_IC2(OUT_Y_HIGH) << 8) | Read_IC2(OUT_Y_LOW);
 
-    
-    while (!(I2C2->ISR & (I2C_ISR_TXIS | I2C_ISR_NACKF)));
-    if (I2C2->ISR & I2C_ISR_NACKF)
-    {
-        return;
-    }
-    
+        My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9, GPIO_PIN_RESET);
 
-    I2C2->TXDR = WHO_AM_I;
-
-    while (!(I2C2->ISR & I2C_ISR_TC));
-
-    I2C2->CR2 |= (0x69 << 1) | (1 << 16) | (1 << 10) | (1 << 13);
-
-    while (!(I2C2->ISR & (I2C_ISR_RXNE | I2C_ISR_NACKF)));
-
-    if (I2C2->ISR & I2C_ISR_RXNE)
-    {
-        uint8_t data = I2C2->RXDR;
-
-        if (data == 0xD3) {
-            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
-        } else {
-            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+        if (x_axis > THRESHOLD) {
+            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); 
+        } else if (x_axis < -THRESHOLD) {
+            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);  
         }
-    }
 
-    I2C2->CR2 |= I2C_CR2_STOP;
+        if (y_axis > THRESHOLD) {
+            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+        } else if (y_axis < -THRESHOLD) {
+            My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); 
+        }
+        HAL_Delay(100);
+    }
 }

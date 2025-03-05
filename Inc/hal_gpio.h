@@ -21,3 +21,6 @@ void USART3_input_LED(void);
 void I2C2_Clock_Enable(void);
 void I2C2_Set_100Hz(void);
 void I2C2_Reading_Reg(void);
+uint8_t Write_I2C(uint8_t reg, uint8_t value);
+uint8_t Read_IC2 (uint8_t reg);
+void lab5_checkoff_one(void);
