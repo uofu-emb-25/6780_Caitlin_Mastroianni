@@ -18,3 +18,6 @@ void My_USART_HAL_GPIO_Init(void);
 void USART_trans_String(char inputString[]);
 char USART3_read_Char(void);
 void USART3_input_LED(void);
+void I2C2_Clock_Enable(void);
+void I2C2_Set_100Hz(void);
+void I2C2_Reading_Reg(void);
