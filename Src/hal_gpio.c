@@ -350,3 +350,27 @@ uint8_t Read_IC2 (uint8_t reg) {
     return I2C2->RXDR;
 }
 
+
+void ADC_init(void){
+    ADC1->CFGR1 &= ~(1 << 3); 
+    ADC1->CFGR1 |= (1 << 4); 
+    ADC1->CFGR1 |= (1 << 13); 
+    ADC1->CFGR1 &= ~(1 << 16);
+    ADC1->CHSELR |= (1 << 1);
+
+    ADC1->CR &= ~(1 << 0); 
+    ADC1->CR |= (1 << 3); 
+    while (ADC1->CR & (1 << 3)); 
+
+    ADC1->CR |= (1 << 0); 
+    while (!(ADC1->ISR & (1 << 0))); 
+
+    ADC1->CR |= (1 << 2);
+}
+
+void DAC_init(void){
+    RCC->APB1ENR |= RCC_APB1ENR_DACEN;
+    
+    DAC->CR &= ~DAC_CR_TSEL1;
+    DAC->CR |= DAC_CR_EN1;
+}
